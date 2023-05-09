@@ -1,14 +1,16 @@
+import streamlit as st
+
 class Inventario:
     def __init__(self):
-        self.productos = []
+        if "productos" in st.session_state:
+            self.productos = st.session_state["productos"]
+        else:
+            self.productos = []
+            st.session_state["productos"] = []
 
     def crear_producto(self, producto):
         self.productos.append(producto)
-
-    def leer_productos(self):
-        print("Listado de productos:")
-        for producto in self.productos:
-            producto.mostrar()
+        st.session_state["productos"] = self.productos
 
     def actualizar_producto(self, id, nombre = None, descripcion = None, precio = None):
         for producto in self.productos:
@@ -24,3 +26,6 @@ class Inventario:
         for i, producto in enumerate(self.productos):
             if producto.id == id:
                 self.productos.pop(i)
+                st.session_state["productos"] = self.productos
+                return True
+        return False
