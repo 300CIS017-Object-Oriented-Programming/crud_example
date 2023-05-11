@@ -2,6 +2,7 @@ import models.producto as productoModel
 import models.inventario as inventarioModel
 import controllers.tiendaController as tiendaController
 import streamlit as st
+import pandas as pd
 
 class Tienda:
     def __init__(self):
@@ -44,20 +45,20 @@ class Tienda:
             if len(productos) == 0:
                 st.error("No hay productos para mostrar")
             else:
-                for producto in productos:
-                    st.markdown(f'**:red[ID del producto: ]** {producto.id}')
-                    st.markdown(f'**:red[Nombre del producto: ]** {producto.nombre}')
-                    st.markdown(f'**:red[Descripción del producto: ]** {producto.descripcion}')
-                    st.markdown(f'**:red[Precio del producto: ]** ${producto.precio}')
+                datos = pd.DataFrame(
+                    self.controlador.aplicar_formato_tabla(productos),
+                    columns=["ID del producto", "Nombre del producto", "Descripción del producto", "Precio del producto"]
+                )
+                st.table(datos)
 
     def menu_crear_producto(self):
         st.divider()
         with st.container():
             st.subheader("Formulario para crear un nuevo producto")
             id = st.text_input("ID del producto:")
-            nombre = st.text_input("Nombre del producto:")
-            descripcion = st.text_input("Descripción del producto:")
-            precio = st.slider("Precio del producto:", min_value = 1000, max_value = 50000, step = 100)
+            nombre = st.text_input("Nombre del producto:", key = 5)
+            descripcion = st.text_input("Descripción del producto:", key = 6)
+            precio = st.slider("Precio del producto:", key = 7, min_value = 1000, max_value = 50000, step = 100)
             boton_accion = st.button("Crear nuevo producto")
 
         if boton_accion:
@@ -79,14 +80,20 @@ class Tienda:
                 for producto in productos:
                     opciones.append(producto.id)
                 id = st.selectbox("Producto a modificar:", opciones)
-                nuevo_nombre = st.text_input("Nombre del producto:")
-                nueva_descripcion = st.text_input("Descripción del producto:")
-                nuevo_precio = st.slider("Precio del producto:", min_value = 1000, max_value = 50000, step = 100)
+                producto_seleccionado = self.obtener_informacion_producto(id, productos)
+                nuevo_nombre = st.text_input("Nombre del producto:", key = 8, value = producto_seleccionado.nombre)
+                nueva_descripcion = st.text_input("Descripción del producto:", key = 9, value = producto_seleccionado.descripcion)
+                nuevo_precio = st.slider("Precio del producto:", key = 10, value = producto_seleccionado.precio, min_value = 1000, max_value = 50000, step = 100)
                 boton_accion = st.button("Actualizar producto")
 
                 if boton_accion:
                     self.inventario.actualizar_producto(id, nuevo_nombre, nueva_descripcion, nuevo_precio)
                     st.success("El producto fue actualizado correctamente")
+
+    def obtener_informacion_producto(self, id, productos):
+        for producto in productos:
+            if producto.id == id:
+                return producto
 
     def menu_borrar_producto(self, productos):
         st.divider()
@@ -104,6 +111,7 @@ class Tienda:
                 boton_accion = st.button("Borrar producto seleccionado")
 
                 if boton_accion:
+                    #boton_accion.disabled = True
                     return opciones[nombre]
 
     def mostrar_mensaje_exitoso(self, mensaje):

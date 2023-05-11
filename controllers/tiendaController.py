@@ -26,3 +26,9 @@ class TiendaController:
                 # Primero mostramos el mensaje y esperamos 2 segundos para forzar la actualización de la vista
                 time.sleep(2)
                 st.experimental_rerun()
+
+    def aplicar_formato_tabla(self, productos):
+        datos = []
+        for producto in productos:
+            datos.append([producto.id, producto.nombre, producto.descripcion, producto.precio])
+        return datos
